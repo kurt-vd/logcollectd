@@ -1,0 +1,8 @@
+# objects
+/logcollectd
+/logcollect
+*.o
+
+# environment
+/tags
+/config.mk
