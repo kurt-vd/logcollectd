@@ -130,6 +130,8 @@ int main(int argc, char *argv[])
 	argv += optind;
 
 	if (!tag)
+		tag = getenv("NAME");
+	if (!tag)
 		tag = basename(*argv);
 
 	if (1) {
