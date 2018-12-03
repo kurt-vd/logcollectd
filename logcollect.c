@@ -79,9 +79,9 @@ static int deliver_logcollect(int fd, const char *tag)
 		mylog(LOG_ERR, "socket: %s", ESTR(errno));
 	ret = sendmsg(sock, &msg, 0);
 	if (ret < 0)
-		mylog(LOG_ERR, "sendmsg: %s", ESTR(errno));
+		mylog(LOG_WARNING, "sendmsg: %s", ESTR(errno));
 	close(sock);
-	return 0;
+	return ret;
 }
 
 __attribute__((unused))
@@ -141,14 +141,17 @@ int main(int argc, char *argv[])
 		ret = pipe(pp);
 		if (ret < 0)
 			mylog(LOG_ERR, "pipe: %s", ESTR(errno));
-		if (dup2(pp[1], STDERR_FILENO) < 0)
-			mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDERR_FILENO, ESTR(errno));
-		if (dup2(pp[1], STDOUT_FILENO) < 0)
-			mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDOUT_FILENO, ESTR(errno));
-		deliver_logcollect(pp[0], tag);
+		if (deliver_logcollect(pp[0], tag) >= 0) {
+			if (dup2(pp[1], STDERR_FILENO) < 0)
+				mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDERR_FILENO, ESTR(errno));
+			if (dup2(pp[1], STDOUT_FILENO) < 0)
+				mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDOUT_FILENO, ESTR(errno));
+			mylog(LOG_INFO, "run '%s'", tag);
+		} else {
+			mylog(LOG_WARNING, "log pipe delivery failed, continue in straight mode");
+		}
 		close(pp[0]);
 		close(pp[1]);
-		mylog(LOG_INFO, "handover '%s'", tag);
 	}
 
 	/* do something */
