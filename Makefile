@@ -20,6 +20,6 @@ clean:
 
 install: $(PROGS)
 	@[ -d $(DESTDIR)$(PREFIX)/sbin ] || install -v -d $(DESTDIR)$(PREFIX)/sbin
-	@install -v logcollected $(DESTDIR)$(PREFIX)/sbin
+	@install -v logcollectd $(DESTDIR)$(PREFIX)/sbin
 	@[ -d $(DESTDIR)$(PREFIX)/bin ] || install -v -d $(DESTDIR)$(PREFIX)/bin
 	@install -v $(filter-out logcollectd, $^) $(DESTDIR)$(PREFIX)/bin
