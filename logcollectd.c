@@ -224,6 +224,8 @@ int main(int argc, char *argv[])
 		libt_flush();
 
 		ret = libe_wait(libt_get_waittime());
+		if (ret < 0 && errno == EINTR)
+			continue;
 		if (ret < 0)
 			/* no test for EINTR using signalfd ... */
 			mylog(LOG_ERR, "libe_wait: %s", ESTR(errno));
