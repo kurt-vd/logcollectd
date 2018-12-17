@@ -128,6 +128,7 @@ static void on_data(int fd, void *dat)
 				break;
 			mylog(LOG_WARNING, "sendmsg: %s", ESTR(errno));
 			disconnected_logsock();
+			break;
 		}
 	}
 }
