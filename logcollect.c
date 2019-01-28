@@ -36,11 +36,14 @@ static const char help_msg[] =
 	"\n"
 	"Options\n"
 	" -t, --tag=NAME	Tag using NAME\n"
+	" -w, --wait		Retry until remote socket is present\n"
 	"\n"
 	NAME " redirects stderr to a pipe and delivers\n"
 	"the reading end to logcollectd\n"
 	;
-static const char optstring[] = "+?Vt:";
+static const char optstring[] = "+?Vt:w";
+
+static int wait;
 
 /* convenience wrapper for send with SCM_CREDENTIALS */
 static int deliver_logcollect(int fd, const char *tag)
@@ -77,9 +80,13 @@ static int deliver_logcollect(int fd, const char *tag)
 	sock = socket(AF_UNIX, SOCK_DGRAM, 0);
 	if (sock < 0)
 		mylog(LOG_ERR, "socket: %s", ESTR(errno));
-	ret = sendmsg(sock, &msg, 0);
-	if (ret < 0)
-		mylog(LOG_WARNING, "sendmsg: %s", ESTR(errno));
+	for (;; usleep(100000)) {
+		ret = sendmsg(sock, &msg, 0);
+		if (ret < 0 && errno == ECONNREFUSED)
+			continue;
+		if (ret < 0)
+			mylog(LOG_WARNING, "sendmsg: %s", ESTR(errno));
+	}
 	close(sock);
 	return ret;
 }
@@ -118,6 +125,9 @@ int main(int argc, char *argv[])
 
 	case 't':
 		tag = optarg;
+		break;
+	case 'w':
+		wait = 1;
 		break;
 	}
 
