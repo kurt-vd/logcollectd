@@ -156,7 +156,6 @@ int main(int argc, char *argv[])
 				mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDERR_FILENO, ESTR(errno));
 			if (dup2(pp[1], STDOUT_FILENO) < 0)
 				mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDOUT_FILENO, ESTR(errno));
-			mylog(LOG_INFO, "run '%s'", tag);
 		} else {
 			mylog(LOG_WARNING, "log pipe delivery failed, continue in straight mode");
 		}
