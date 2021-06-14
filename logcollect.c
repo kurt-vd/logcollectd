@@ -84,7 +84,7 @@ static int deliver_logcollect(int fd, const char *tag)
 		ret = sendmsg(sock, &msg, 0);
 		if (ret >= 0)
 			break;
-		if (errno == ECONNREFUSED) {
+		if (wait && errno == ECONNREFUSED) {
 			/* retry ... */
 			usleep(100000);
 			continue;
