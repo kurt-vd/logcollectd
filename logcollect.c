@@ -37,13 +37,15 @@ static const char help_msg[] =
 	"Options\n"
 	" -t, --tag=NAME	Tag using NAME\n"
 	" -w, --wait		Retry until remote socket is present\n"
+	" -2, --stderr		Only redirect stderr\n"
 	"\n"
-	NAME " redirects stderr to a pipe and delivers\n"
+	NAME " redirects stdout+stderr to a pipe and delivers\n"
 	"the reading end to logcollectd\n"
 	;
-static const char optstring[] = "+?Vt:w";
+static const char optstring[] = "+?Vt:w2";
 
 static int wait;
+static int do_stdout = 1;
 
 /* convenience wrapper for send with SCM_CREDENTIALS */
 static int deliver_logcollect(int fd, const char *tag)
@@ -134,6 +136,9 @@ int main(int argc, char *argv[])
 	case 'w':
 		wait = 1;
 		break;
+	case '2':
+		do_stdout = 0;
+		break;
 	}
 
 	openlog(NAME, LOG_PERROR, LOG_DAEMON);
@@ -159,8 +164,10 @@ int main(int argc, char *argv[])
 		if (deliver_logcollect(pp[0], tag) >= 0) {
 			if (dup2(pp[1], STDERR_FILENO) < 0)
 				mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDERR_FILENO, ESTR(errno));
-			if (dup2(pp[1], STDOUT_FILENO) < 0)
-				mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDOUT_FILENO, ESTR(errno));
+			if (do_stdout) {
+				if (dup2(pp[1], STDOUT_FILENO) < 0)
+					mylog(LOG_ERR, "dup2 %i %i: %s", pp[1], STDOUT_FILENO, ESTR(errno));
+			}
 		} else {
 			mylog(LOG_WARNING, "log pipe delivery failed, continue in straight mode");
 		}
