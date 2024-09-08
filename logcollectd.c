@@ -97,7 +97,7 @@ static void on_data(int fd, void *dat)
 	/* produce time string */
 	time_t now;
 	time(&now);
-	strftime(timestr, sizeof(timestr), "%b %e %T", gmtime(&now));
+	strftime(timestr, sizeof(timestr), "%b %e %T", localtime(&now));
 
 	/* produce header */
 	snprintf(hdr, sizeof(hdr), "<%u>%s %s: ", LOG_NOTICE | LOG_LOCAL6,
