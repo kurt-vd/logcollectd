@@ -84,15 +84,15 @@ static int deliver_logcollect(int fd, const char *tag)
 		mylog(LOG_ERR, "socket: %s", ESTR(errno));
 	for (;;) {
 		ret = sendmsg(sock, &msg, 0);
-		if (ret >= 0)
-			break;
-		if (wait && errno == ECONNREFUSED) {
+		if (wait && ret < 0 && errno == ECONNREFUSED) {
 			/* retry ... */
 			usleep(100000);
-			continue;
+		} else {
+			if (ret < 0)
+				mylog(LOG_WARNING, "sendmsg: %s", ESTR(errno));
+			/* for unknown failures, or success, just quit this loop */
+			break;
 		}
-		if (ret < 0)
-			mylog(LOG_WARNING, "sendmsg: %s", ESTR(errno));
 	}
 	close(sock);
 	return ret;
